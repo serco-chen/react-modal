@@ -1,9 +1,11 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ReactModal = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null);
-var ExecutionEnvironment = require('react/lib/ExecutionEnvironment');
+var ReactDOM = (typeof window !== "undefined" ? window['ReactDOM'] : typeof global !== "undefined" ? global['ReactDOM'] : null);
+var ExecutionEnvironment = require('exenv');
 var ModalPortal = React.createFactory(require('./ModalPortal'));
 var ariaAppHider = require('../helpers/ariaAppHider');
 var elementClass = require('element-class');
+var renderSubtreeIntoContainer = (typeof window !== "undefined" ? window['ReactDOM'] : typeof global !== "undefined" ? global['ReactDOM'] : null).unstable_renderSubtreeIntoContainer;
 
 var SafeHTMLElement = ExecutionEnvironment.canUseDOM ? window.HTMLElement : {};
 
@@ -12,7 +14,7 @@ var Modal = module.exports = React.createClass({
   displayName: 'Modal',
   statics: {
     setAppElement: ariaAppHider.setElement,
-    injectCSS : function() {
+    injectCSS: function() {
       "production" !== "production"
         && console.warn('React-Modal: injectCSS has been deprecated ' +
                         'and no longer has any effect. It will be removed in a later version');
@@ -21,7 +23,7 @@ var Modal = module.exports = React.createClass({
 
   propTypes: {
     isOpen: React.PropTypes.bool.isRequired,
-    style : React.PropTypes.shape({
+    style: React.PropTypes.shape({
       content: React.PropTypes.object,
       overlay: React.PropTypes.object
     }),
@@ -51,7 +53,7 @@ var Modal = module.exports = React.createClass({
   },
 
   componentWillUnmount: function() {
-    React.unmountComponentAtNode(this.node);
+    ReactDOM.unmountComponentAtNode(this.node);
     document.body.removeChild(this.node);
   },
 
@@ -66,10 +68,7 @@ var Modal = module.exports = React.createClass({
       ariaAppHider.toggle(props.isOpen, props.appElement);
     }
     sanitizeProps(props);
-    if (this.portal)
-      this.portal.setProps(props);
-    else
-      this.portal = React.render(ModalPortal(props), this.node);
+    this.portal = renderSubtreeIntoContainer(this, ModalPortal(props), this.node);
   },
 
   render: function () {
@@ -81,7 +80,7 @@ function sanitizeProps(props) {
   delete props.ref;
 }
 
-},{"../helpers/ariaAppHider":3,"./ModalPortal":2,"element-class":8,"react/lib/ExecutionEnvironment":20}],2:[function(require,module,exports){
+},{"../helpers/ariaAppHider":3,"./ModalPortal":2,"element-class":8,"exenv":9}],2:[function(require,module,exports){
 var React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null);
 var div = React.DOM.div;
 var focusManager = require('../helpers/focusManager');
@@ -104,7 +103,7 @@ var CLASS_NAMES = {
 };
 
 var defaultStyles = {
-  overlay : {
+  overlay: {
     position        : 'fixed',
     top             : 0,
     left            : 0,
@@ -112,7 +111,7 @@ var defaultStyles = {
     bottom          : 0,
     backgroundColor : 'rgba(255, 255, 255, 0.75)'
   },
-  content : {
+  content: {
     position                : 'absolute',
     top                     : '40px',
     left                    : '40px',
@@ -125,7 +124,6 @@ var defaultStyles = {
     borderRadius            : '4px',
     outline                 : 'none',
     padding                 : '20px'
-
   }
 };
 
@@ -140,10 +138,10 @@ var ModalPortal = module.exports = React.createClass({
   getDefaultProps: function() {
     return {
       style: {
-        overlay : {},
-        content : {}
+        overlay: {},
+        content: {}
       }
-    }
+    };
   },
 
   getInitialState: function() {
@@ -187,7 +185,7 @@ var ModalPortal = module.exports = React.createClass({
   },
 
   open: function() {
-    focusManager.setupScopedFocus(this.getDOMNode());
+    focusManager.setupScopedFocus(this.node);
     focusManager.markForFocusLater();
     this.setState({isOpen: true}, function() {
       this.setState({afterOpen: true});
@@ -204,7 +202,7 @@ var ModalPortal = module.exports = React.createClass({
   },
 
   focusContent: function() {
-    this.refs.content.getDOMNode().focus();
+    this.refs.content.focus();
   },
 
   closeWithTimeout: function() {
@@ -226,7 +224,7 @@ var ModalPortal = module.exports = React.createClass({
   },
 
   handleKeyDown: function(event) {
-    if (event.keyCode == 9 /*tab*/) scopeTab(this.refs.content.getDOMNode(), event);
+    if (event.keyCode == 9 /*tab*/) scopeTab(this.refs.content, event);
     if (event.keyCode == 27 /*esc*/) this.requestClose();
   },
 
@@ -282,8 +280,8 @@ var ModalPortal = module.exports = React.createClass({
   }
 });
 
-},{"../helpers/focusManager":4,"../helpers/scopeTab":5,"lodash.assign":9}],3:[function(require,module,exports){
-var _element = document.body;
+},{"../helpers/focusManager":4,"../helpers/scopeTab":5,"lodash.assign":10}],3:[function(require,module,exports){
+var _element = typeof document !== 'undefined' ? document.body : null;
 
 function setElement(element) {
   if (typeof element === 'string') {
@@ -343,9 +341,9 @@ function handleFocus(event) {
     }
     // need to see how jQuery shims document.on('focusin') so we don't need the
     // setTimeout, firefox doesn't support focusin, if it did, we could focus
-    // the the element outisde of a setTimeout. Side-effect of this
-    // implementation is that the document.body gets focus, and then we focus
-    // our element right after, seems fine.
+    // the element outside of a setTimeout. Side-effect of this implementation 
+    // is that the document.body gets focus, and then we focus our element right 
+    // after, seems fine.
     setTimeout(function() {
       if (modalElement.contains(document.activeElement))
         return;
@@ -526,6 +524,47 @@ ElementClass.prototype.toggle = function(className) {
 }
 
 },{}],9:[function(require,module,exports){
+/*!
+  Copyright (c) 2015 Jed Watson.
+  Based on code that is Copyright 2013-2015, Facebook, Inc.
+  All rights reserved.
+*/
+
+(function () {
+	'use strict';
+
+	var canUseDOM = !!(
+		typeof window !== 'undefined' &&
+		window.document &&
+		window.document.createElement
+	);
+
+	var ExecutionEnvironment = {
+
+		canUseDOM: canUseDOM,
+
+		canUseWorkers: typeof Worker !== 'undefined',
+
+		canUseEventListeners:
+			canUseDOM && !!(window.addEventListener || window.attachEvent),
+
+		canUseViewport: canUseDOM && !!window.screen
+
+	};
+
+	if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+		define(function () {
+			return ExecutionEnvironment;
+		});
+	} else if (typeof module !== 'undefined' && module.exports) {
+		module.exports = ExecutionEnvironment;
+	} else {
+		window.ExecutionEnvironment = ExecutionEnvironment;
+	}
+
+}());
+
+},{}],10:[function(require,module,exports){
 /**
  * lodash 3.2.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -607,7 +646,7 @@ var assign = createAssigner(function(object, source, customizer) {
 
 module.exports = assign;
 
-},{"lodash._baseassign":10,"lodash._createassigner":12,"lodash.keys":16}],10:[function(require,module,exports){
+},{"lodash._baseassign":11,"lodash._createassigner":13,"lodash.keys":17}],11:[function(require,module,exports){
 /**
  * lodash 3.2.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -636,7 +675,7 @@ function baseAssign(object, source) {
 
 module.exports = baseAssign;
 
-},{"lodash._basecopy":11,"lodash.keys":16}],11:[function(require,module,exports){
+},{"lodash._basecopy":12,"lodash.keys":17}],12:[function(require,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -670,7 +709,7 @@ function baseCopy(source, props, object) {
 
 module.exports = baseCopy;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  * lodash 3.1.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -724,7 +763,7 @@ function createAssigner(assigner) {
 
 module.exports = createAssigner;
 
-},{"lodash._bindcallback":13,"lodash._isiterateecall":14,"lodash.restparam":15}],13:[function(require,module,exports){
+},{"lodash._bindcallback":14,"lodash._isiterateecall":15,"lodash.restparam":16}],14:[function(require,module,exports){
 /**
  * lodash 3.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -791,7 +830,7 @@ function identity(value) {
 
 module.exports = bindCallback;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /**
  * lodash 3.0.9 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -925,7 +964,7 @@ function isObject(value) {
 
 module.exports = isIterateeCall;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /**
  * lodash 3.6.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -994,7 +1033,7 @@ function restParam(func, start) {
 
 module.exports = restParam;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /**
  * lodash 3.1.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1232,7 +1271,7 @@ function keysIn(object) {
 
 module.exports = keys;
 
-},{"lodash._getnative":17,"lodash.isarguments":18,"lodash.isarray":19}],17:[function(require,module,exports){
+},{"lodash._getnative":18,"lodash.isarguments":19,"lodash.isarray":20}],18:[function(require,module,exports){
 /**
  * lodash 3.9.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1371,7 +1410,7 @@ function isNative(value) {
 
 module.exports = getNative;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1479,7 +1518,7 @@ function isArguments(value) {
 
 module.exports = isArguments;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1660,50 +1699,6 @@ function isNative(value) {
 }
 
 module.exports = isArray;
-
-},{}],20:[function(require,module,exports){
-/**
- * Copyright 2013-2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule ExecutionEnvironment
- */
-
-/*jslint evil: true */
-
-"use strict";
-
-var canUseDOM = !!(
-  (typeof window !== 'undefined' &&
-  window.document && window.document.createElement)
-);
-
-/**
- * Simple, lightweight module assisting with the detection and context of
- * Worker. Helps avoid circular dependencies and allows code to reason about
- * whether or not they are in a Worker, even if they never include the main
- * `ReactWorker` dependency.
- */
-var ExecutionEnvironment = {
-
-  canUseDOM: canUseDOM,
-
-  canUseWorkers: typeof Worker !== 'undefined',
-
-  canUseEventListeners:
-    canUseDOM && !!(window.addEventListener || window.attachEvent),
-
-  canUseViewport: canUseDOM && !!window.screen,
-
-  isInWorker: !canUseDOM // For now, this is true - might change in the future.
-
-};
-
-module.exports = ExecutionEnvironment;
 
 },{}]},{},[7])(7)
 });

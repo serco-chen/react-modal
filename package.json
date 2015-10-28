@@ -1,6 +1,6 @@
 {
   "name": "react-modal",
-  "version": "0.5.0",
+  "version": "0.6.1",
   "description": "Accessible modal dialog component for React.JS",
   "main": "./lib/index",
   "repository": {
@@ -34,7 +34,9 @@
     "karma-mocha": "0.2.0",
     "karma-safari-launcher": "^0.1.1",
     "mocha": "2.3.3",
-    "react": ">=0.13.3",
+    "react-addons-test-utils": "^0.14.0",
+    "react-dom": "^0.14.0",
+    "react": "^0.14.0",
     "reactify": "^1.1.1",
     "rf-release": "0.4.0",
     "uglify-js": "2.4.24",
@@ -42,10 +44,11 @@
   },
   "dependencies": {
     "element-class": "^0.2.0",
+    "exenv": "1.2.0",
     "lodash.assign": "^3.2.0"
   },
   "peerDependencies": {
-    "react": ">=0.13.3 || ^0.14.0-beta3"
+    "react": "^0.14.0"
   },
   "tags": [
     "react",
@@ -59,6 +62,7 @@
     "dialog"
   ],
   "browserify-shim": {
-    "react": "global:React"
+    "react": "global:React",
+    "react-dom": "global:ReactDOM"
   }
 }
